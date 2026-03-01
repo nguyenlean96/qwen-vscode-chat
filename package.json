@@ -1,20 +1,44 @@
 {
   "name": "qwen-vscode-chat",
+  "publisher": "nguyenlean96",
   "displayName": "Qwen VSCode Chat",
   "description": "A VS Code chat extension for Qwen and other models hosted on Alibaba platform.",
-  "version": "0.0.1",
+  "icon": "assets/logo.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nguyenlean96/qwen-vscode-chat"
+  },
+  "version": "0.1.0",
   "engines": {
     "vscode": "^1.109.0"
   },
   "categories": [
-    "Other"
+    "AI",
+    "Chat"
   ],
   "activationEvents": [],
+  "galleryBanner": {},
+  "badges": [],
+  "homepage": "",
+  "bugs": {
+    "url": "https://github.com/nguyenlean96/qwen-vscode-chat/issues"
+  },
   "main": "./dist/extension.js",
   "contributes": {
+    "languageModelChatProviders": [
+      {
+        "vendor": "qwen",
+        "displayName": "Qwen",
+        "managementCommand": "qwen.manage"
+      }
+    ],
     "commands": [
       {
-        "command": "qwen-vscode-chat.helloWorld",
+        "command": "qwen.manage",
+        "title": "Manage Qwen Provider"
+      },
+      {
+        "command": "qwen.helloWorld",
         "title": "Hello World"
       }
     ]
@@ -34,15 +58,18 @@
     "test": "vscode-test"
   },
   "devDependencies": {
-    "@types/vscode": "^1.109.0",
     "@types/mocha": "^10.0.10",
     "@types/node": "22.x",
-    "typescript-eslint": "^8.54.0",
-    "eslint": "^9.39.2",
+    "@types/vscode": "^1.109.0",
+    "@vscode/test-cli": "^0.0.12",
+    "@vscode/test-electron": "^2.5.2",
     "esbuild": "^0.27.2",
+    "eslint": "^9.39.2",
     "npm-run-all": "^4.1.5",
     "typescript": "^5.9.3",
-    "@vscode/test-cli": "^0.0.12",
-    "@vscode/test-electron": "^2.5.2"
+    "typescript-eslint": "^8.54.0"
+  },
+  "dependencies": {
+    "openai": "^6.25.0"
   }
 }
