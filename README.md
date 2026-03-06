@@ -1,71 +1,161 @@
-# qwen-vscode-chat README
+# Qwen VSCode Chat
 
-This is the README for your extension "qwen-vscode-chat". After writing up a brief description, we recommend including the following sections.
+A VS Code extension that integrates Qwen and other Alibaba Cloud language models directly into your code editor. Chat with AI models, get code suggestions, and leverage AI assistance without leaving your development environment.
 
 ## Features
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
+### 🤖 AI Chat Integration
+- Seamless integration with Qwen language models hosted on Alibaba Cloud
+- Chat interface directly within VS Code
+- Support for multiple Qwen models
 
-For example if there is an image subfolder under your extension project workspace:
+### 🔑 Easy API Key Management
+- Simple command to manage your Alibaba Cloud API keys
+- Secure storage using VS Code's secret storage
+- Quick setup and configuration
 
-\!\[feature X\]\(images/feature-x.png\)
+### 💬 Interactive Chat
+- Real-time conversation with AI models
+- Context-aware responses
+- Markdown formatting support
 
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
+### 🛠️ Developer Tools
+- Code analysis and suggestions
+- Natural language to code translation
+- Documentation assistance
 
 ## Requirements
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+To use this extension, you need:
+
+1. **Alibaba Cloud Account**: Sign up at [Alibaba Cloud](https://www.alibabacloud.com/)
+2. **Qwen API Access**: Obtain API credentials from Alibaba Cloud console
+3. **VS Code 1.109.0 or higher**: The extension requires this minimum version
+
+## Installation
+
+1. Install the extension from the VS Code Marketplace
+2. Run the command `Qwen: Manage API Key` from the command palette
+3. Enter your Alibaba Cloud Qwen API key
+4. Start chatting with Qwen models!
+
+## Usage
+
+### Managing API Keys
+
+1. Open the command palette (`Ctrl+Shift+P` or `Cmd+Shift+P`)
+2. Search for "Qwen: Manage API Key"
+3. Enter your Alibaba Cloud Qwen API key when prompted
+4. Your API key will be securely stored
+
+### Starting a Chat
+
+1. Open the chat view in VS Code (click the chat icon in the activity bar)
+2. Select "Qwen" as your chat provider
+3. Start typing your questions or requests
+4. Receive AI-powered responses directly in your editor
+
+## Commands
+
+- `qwen.manage`: Manage your Qwen API key
+- `qwen.helloWorld`: Test command to verify extension installation
 
 ## Extension Settings
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
+This extension currently doesn't add any VS Code settings through `contributes.configuration`. All configuration is handled through the API key management command.
 
-For example:
+## Security
 
-This extension contributes the following settings:
+- API keys are stored securely using VS Code's built-in secret storage
+- Keys are never logged or transmitted anywhere except to Alibaba Cloud's official API endpoints
+- You can clear your API key at any time using the manage command
 
-* `myExtension.enable`: Enable/disable this extension.
-* `myExtension.thing`: Set to `blah` to do something.
+## Supported Models
 
-## Known Issues
+The extension supports various Qwen models hosted on Alibaba Cloud platform. The specific models available depend on your Alibaba Cloud subscription.
 
-Calling out known issues can help limit users opening duplicate issues against your extension.
+## Troubleshooting
+
+### API Key Issues
+
+If you encounter authentication errors:
+1. Verify your API key is correct
+2. Check your Alibaba Cloud account status
+3. Ensure your subscription includes Qwen API access
+
+### Connection Problems
+
+If the extension can't connect to Qwen services:
+1. Check your internet connection
+2. Verify Alibaba Cloud services are operational
+3. Try restarting VS Code
+
+## Development
+
+### Building the Extension
+
+To build and package this extension for local development or distribution:
+
+1. First, ensure you have `vsce` (Visual Studio Code Extension Manager) installed globally:
+   ```bash
+   npm install -g @vscode/vsce
+   ```
+
+2. Then, navigate to your extension directory and package it:
+   ```bash
+   vsce package --no-dependencies
+   ```
+
+   The `--no-dependencies` flag creates a lighter package without bundling dependencies that might be resolved at runtime.
+
+3. To install the packaged extension locally for testing:
+   ```bash
+   code --install-extension <path-to-packaged-extension.vsix>
+   ```
+
+   Replace `<path-to-packaged-extension.vsix>` with the actual path to the generated .vsix file.
+
+4. Reload VS Code or restart it to start using your locally installed version of the extension.
+
+### Local Development
+
+For active development, you can also run the extension in development mode:
+1. Open this folder in VS Code
+2. Press `F5` to open a new window with the extension loaded
+3. Make changes to the code and reload the extension window to see updates
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## Release Notes
 
-Users appreciate release notes as you update your extension.
+### 0.1.0
 
-### 1.0.0
+- Initial release
+- Basic Qwen chat provider integration
+- API key management
+- Hello World test command
 
-Initial release of ...
+## Support
 
-### 1.0.1
+For issues, questions, or feature requests:
 
-Fixed issue #.
+- Open an issue on [GitHub](https://github.com/nguyenlean96/qwen-vscode-chat/issues)
+- Check the [documentation](docs/)
 
-### 1.1.0
+## Acknowledgements
 
-Added features X, Y, and Z.
-
----
-
-## Following extension guidelines
-
-Ensure that you've read through the extensions guidelines and follow the best practices for creating your extension.
-
-* [Extension Guidelines](https://code.visualstudio.com/api/references/extension-guidelines)
-
-## Working with Markdown
-
-You can author your README using Visual Studio Code. Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux).
-* Toggle preview (`Shift+Cmd+V` on macOS or `Shift+Ctrl+V` on Windows and Linux).
-* Press `Ctrl+Space` (Windows, Linux, macOS) to see a list of Markdown snippets.
-
-## For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-
-**Enjoy!**
+- Thanks to Alibaba Cloud for providing the Qwen language models
+- Built with VS Code's language model chat provider API
+- Inspired by the growing ecosystem of AI-powered development tools
