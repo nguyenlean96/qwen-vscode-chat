@@ -3,7 +3,6 @@
   "publisher": "nguyenlean96",
   "displayName": "Qwen VSCode Chat",
   "description": "A VS Code chat extension for Qwen and other models hosted on Alibaba platform.",
-  "icon": "assets/logo.png",
   "repository": {
     "type": "git",
     "url": "https://github.com/nguyenlean96/qwen-vscode-chat"
@@ -36,10 +35,6 @@
       {
         "command": "qwen.manage",
         "title": "Manage Qwen Provider"
-      },
-      {
-        "command": "qwen.helloWorld",
-        "title": "Hello World"
       }
     ]
   },
@@ -58,18 +53,21 @@
     "test": "vscode-test"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@stylistic/eslint-plugin": "^5.9.0",
     "@types/mocha": "^10.0.10",
-    "@types/node": "22.x",
-    "@types/vscode": "^1.109.0",
+    "@types/node": "^22",
+    "@types/vscode": "^1.103.0",
+    "@vscode/dts": "^0.4.1",
     "@vscode/test-cli": "^0.0.12",
     "@vscode/test-electron": "^2.5.2",
     "esbuild": "^0.27.2",
     "eslint": "^9.39.2",
+    "jsonrepair": "^3.13.2",
     "npm-run-all": "^4.1.5",
+    "openai": "^6.25.0",
+    "prettier": "^3.8.1",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.54.0"
-  },
-  "dependencies": {
-    "openai": "^6.25.0"
   }
 }
