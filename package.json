@@ -3,6 +3,7 @@
   "publisher": "nguyenlean96",
   "displayName": "Qwen VSCode Chat",
   "description": "A VS Code chat extension for Qwen and other models hosted on Alibaba platform.",
+  "icon": "assets/logo.png",
   "repository": {
     "type": "git",
     "url": "https://github.com/nguyenlean96/qwen-vscode-chat"
