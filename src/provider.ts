@@ -49,33 +49,10 @@ function extractRequestedTools(content: string): Set<string> {
 	return tools;
 }
 
-function parseXmlToolCall(buffer: string) {
-	// 1. Extract Function Name
-	const funcMatch = buffer.match(/<function=([^>]+)>/);
-	const toolName = funcMatch ? funcMatch[1] : null;
-
-	if (!toolName) return null;
-
-	// 2. Extract Parameters
-	const params: Record<string, any> = {};
-	const paramRegex = /<parameter=([^>]+)>([\s\S]*?)<\/parameter>/g;
-
-	let match;
-	while ((match = paramRegex.exec(buffer)) !== null) {
-		const key = match[1];
-		const value = match[2].trim(); // distinct from JSON, this is likely a string
-		params[key] = value;
-	}
-
-	return {
-		tool: toolName,
-		parameters: params,
-	};
-}
-
 export class QwenChatModelProvider implements LanguageModelChatProvider {
 	private _processPartId: string | undefined;
 	private _isAnswering = false;
+	private _textContentBuffer = '';
 	private _toolCallBuffers = new Map<
 		string,
 		{ id: string; name: string; args: Record<string, unknown> }
@@ -106,6 +83,9 @@ export class QwenChatModelProvider implements LanguageModelChatProvider {
 		let requestBody: Record<string, unknown> | undefined;
 
 		try {
+			// Initialize the text content buffer for this request
+			this._textContentBuffer = '';
+			
 			const apiKey = await this.ensureApiKey(true);
 			if (!apiKey) {
 				throw new Error('Qwen API key not found');
@@ -180,7 +160,6 @@ export class QwenChatModelProvider implements LanguageModelChatProvider {
 				// The last chunk does not contain choices, but it contains usage information.
 				if (chunk.choices && chunk.choices.length > 0) {
 					const deltaObj: any = chunk.choices[0]?.delta;
-					// console.log('deltaObj', deltaObj);
 
 					const maybeThinking = (deltaObj as Record<string, unknown> | undefined)
 						?.reasoning_content;
@@ -225,7 +204,30 @@ export class QwenChatModelProvider implements LanguageModelChatProvider {
 						if (!this._isAnswering) {
 							this._isAnswering = true;
 						}
-						trackingProgress.report(new vscode.LanguageModelTextPart(content));
+						
+						// Accumulate content in buffer to handle models that break content into lines
+						this._textContentBuffer += content;
+						
+						/**
+						 * 	Check if we have a paragraph break (\n\n) or similar indicators
+						 * 	to flush the buffer. This helps handle models that send content
+						 * 	in smaller chunks with line breaks
+						 */
+						if (this._textContentBuffer.includes('\n\n')) {
+							// Report the accumulated content when we detect paragraph breaks
+							const currentBufferParts = this._textContentBuffer.split('\n\n');
+
+							trackingProgress.report(new vscode.LanguageModelTextPart(`${currentBufferParts.shift() ?? ''}\n\n`));
+							
+							// Reset the buffer after reporting
+							this._textContentBuffer = currentBufferParts.join('\n\n');
+						}
+						else if (this._textContentBuffer.length > 1000) {
+							// For smoother UX, we can also report shorter chunks if they've been accumulating for a while
+							// or if the buffer gets too large without paragraph breaks
+							trackingProgress.report(new vscode.LanguageModelTextPart(this._textContentBuffer));
+							this._textContentBuffer = '';
+						}
 					}
 
 					if (chunk.choices[0]?.finish_reason) {
@@ -260,6 +262,12 @@ export class QwenChatModelProvider implements LanguageModelChatProvider {
 					 * 	- Total Tokens: chunk.usage.total_tokens
 					 */
 				}
+			}
+
+			// Flush any remaining content in the buffer when the stream ends
+			if (this._textContentBuffer) {
+				trackingProgress.report(new vscode.LanguageModelTextPart(this._textContentBuffer));
+				this._textContentBuffer = '';
 			}
 
 			this._isAnswering = false;
