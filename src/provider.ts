@@ -16,8 +16,15 @@ import {
 } from 'vscode';
 import OpenAI from 'openai';
 import { convertMessages } from './utils/messages';
-import { API_BASE_URL, SUPPORTED_MODELS } from './config';
+import {
+  QWEN_MODELS,
+  DEEPSEEK_MODELS,
+  KIMI_MODELS,
+  GLM_MODELS,
+} from '@/config/models'
 import { StreamingToolCallParser } from './utils/parsers/streamingToolCallParser';
+
+export const API_BASE_URL = 'https://dashscope-intl.aliyuncs.com/compatible-mode/v1';
 
 function getLastUserMessage(
 	messages: OpenAI.Chat.ChatCompletionMessageParam[],
@@ -70,7 +77,12 @@ export class QwenChatModelProvider implements LanguageModelChatProvider {
 	constructor(private readonly secrets: vscode.SecretStorage) {}
 
 	async provideLanguageModelChatInformation(): Promise<LanguageModelChatInformation[]> {
-		return SUPPORTED_MODELS;
+		return [
+			...QWEN_MODELS,
+			...DEEPSEEK_MODELS,
+			...KIMI_MODELS,
+			...GLM_MODELS,
+		];
 	}
 
 	async provideLanguageModelChatResponse(
@@ -277,6 +289,9 @@ export class QwenChatModelProvider implements LanguageModelChatProvider {
 				messageCount: messages.length,
 				error: e instanceof Error ? { name: e.name, message: e.message } : String(e),
 			});
+			vscode.window.showErrorMessage(
+				e instanceof Error ? e.message : String(e)
+			)
 		}
 	}
 
