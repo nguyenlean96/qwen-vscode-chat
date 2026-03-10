@@ -19,6 +19,11 @@ export class QwenClient {
   private _failedEndpoints: Array<FailedAttemptUrl> = [];
   private _client: OpenAI;
   
+  /**
+   * Creates a new QwenClient instance.
+   * @param apiKey The API key for authentication
+   * @param lastUsedUrl Optional URL of the last used endpoint for continuity
+   */
   constructor(
     private readonly apiKey: string,
     lastUsedUrl: string | undefined = undefined
@@ -32,6 +37,11 @@ export class QwenClient {
     this._client = this.initialize();
   }
 
+  /**
+   * Creates a streaming chat completion request
+   * @param requestBody The request body containing model, messages, tools, and stream options
+   * @returns A promise that resolves to a stream of chat completion chunks
+   */
   stream(
     requestBody: {
       model: string;
@@ -68,6 +78,10 @@ export class QwenClient {
     );
   }
   
+  /**
+   * Initializes the OpenAI client with the current endpoint
+   * @returns A configured OpenAI client instance
+   */
   private initialize(): OpenAI {
     return new OpenAI({
       apiKey: this.apiKey,
@@ -75,6 +89,10 @@ export class QwenClient {
     });
   }
 
+  /**
+   * Records a failed endpoint attempt
+   * @param error_msg The error message from the failed attempt
+   */
   throwEndpointException(error_msg: string): void {
     this._failedEndpoints.push({
       url: ENDPOINTS[this._workingEndpointIndex],
@@ -98,6 +116,10 @@ export class QwenClient {
     this._client = this._client.withOptions({baseURL: ENDPOINTS[this._workingEndpointIndex]});
   }
   
+  /**
+   * Gets the current working endpoint URL
+   * @returns The URL of the current endpoint
+   */
   getUrl(): string {
     return ENDPOINTS[this._workingEndpointIndex];
   }
