@@ -14,7 +14,6 @@ import {
 	 */
 	ProvideLanguageModelChatResponseOptions,
 } from 'vscode';
-import OpenAI from 'openai';
 import { convertMessages } from './utils/messages';
 import {
 	QWEN_MODELS,
@@ -29,36 +28,6 @@ import { GlobalStateStore } from './utils/storage';
 
 export const API_BASE_URL = 'https://dashscope-intl.aliyuncs.com/compatible-mode/v1';
 export const CODING_API_BASE_URL = 'https://coding-intl.dashscope.aliyuncs.com/v1';
-
-function getLastUserMessage(
-	messages: OpenAI.Chat.ChatCompletionMessageParam[],
-): OpenAI.Chat.ChatCompletionMessageParam | null {
-	let lastUserMessage = null;
-
-	for (let i = messages.length - 1; i >= 0; i--) {
-		if (messages[i].role === 'user') {
-			return messages[i];
-		}
-	}
-	return lastUserMessage;
-}
-
-function extractRequestedTools(content: string): Set<string> {
-	const tools = new Set<string>();
-	const toolReferencesMatch = content.match(/<toolReferences>([\s\S]*?)<\/toolReferences>/);
-	const toolReferencesContent = toolReferencesMatch ? toolReferencesMatch[1].trim() : null;
-
-	if (toolReferencesContent === null) {
-		return tools;
-	}
-
-	const toolLines = toolReferencesContent.match(/^\s*-\s+([^\s]+)/gm) ?? [];
-	for (const t of toolLines.map((line) => line.replace(/^\s*-\s+/, '').trim())) {
-		tools.add(t);
-	}
-
-	return tools;
-}
 
 export class QwenChatModelProvider implements LanguageModelChatProvider {
 	private store: GlobalStateStore;
@@ -134,40 +103,19 @@ export class QwenChatModelProvider implements LanguageModelChatProvider {
 				messages,
 				Object.fromEntries(this._toolCallBuffers),
 			);
-			const lastUserMessage = getLastUserMessage(openaiMessages);
-			const userRequestedTools = extractRequestedTools(
-				(lastUserMessage?.content as string) ?? '',
-			);
 
 			/**
-			 * Tool filtering behavior:
-			 * - If user explicitly selects tools (via toolReferences), only those tools are available to the LLM
-			 * - Otherwise, all available tools are passed to the LLM (consistent with other extensions like Google Gemini)
+			 * All tools are available by default.
 			 */
-			const openaiCompatibleTools = userRequestedTools.size > 0 ?
-				options.tools
-					?.map((tool) =>
-						userRequestedTools.has(tool.name)
-							? {
-								type: 'function' as const,
-								function: {
-									name: tool.name,
-									description: tool.description,
-									parameters: tool.inputSchema ?? { type: 'object' },
-								},
-							}
-							: null,
-					)
-					.filter((t) => t !== null)
-				: options.tools
-					?.map((tool) => ({
-						type: 'function' as const,
-						function: {
-							name: tool.name,
-							description: tool.description,
-							parameters: tool.inputSchema ?? { type: 'object' },
-						},
-					}));
+			const openaiCompatibleTools = options.tools
+				?.map((tool) => ({
+					type: 'function' as const,
+					function: {
+						name: tool.name,
+						description: tool.description,
+						parameters: tool.inputSchema ?? { type: 'object' },
+					},
+				}));
 
 			let allowClientRotation: boolean = true;
 			while (allowClientRotation) {
