@@ -3,6 +3,36 @@ import OpenAI from 'openai';
 
 
 
+/**
+ * Converts VS Code Language Model chat messages to OpenAI API compatible message format.
+ * 
+ * This function transforms VS Code's LanguageModelChatRequestMessage array into the format
+ * expected by the OpenAI Chat Completion API. It handles various message types including:
+ * - Regular text messages (user, assistant, system)
+ * - Tool calls (function calls from assistant)
+ * - Tool results (responses from tool executions)
+ * 
+ * The conversion process:
+ * 1. Maps VS Code message roles to OpenAI roles (user/assistant/system/tool)
+ * 2. Extracts text content from LanguageModelTextPart instances
+ * 3. Converts LanguageModelToolCallPart to OpenAI tool call format
+ * 4. Processes tool result parts and maps them to tool messages
+ * 5. Handles edge cases like missing content or call IDs
+ * 
+ * @param messages - Array of VS Code LanguageModelChatRequestMessage objects to convert
+ * @param toolData - Mapping of tool call IDs to tool names for proper tool result formatting
+ * 
+ * @returns Array of OpenAI ChatCompletionMessageParam objects ready for API consumption
+ * 
+ * @example
+ * const vscodeMessages = [
+ *   { role: LanguageModelChatMessageRole.User, content: ['Hello'] },
+ *   { role: LanguageModelChatMessageRole.Assistant, content: ['Hi there!'] }
+ * ];
+ * 
+ * const openaiMessages = convertMessages(vscodeMessages, {});
+ * // Returns: [{ role: 'user', content: 'Hello' }, { role: 'assistant', content: 'Hi there!' }]
+ */
 export function convertMessages(
 	messages: readonly vscode.LanguageModelChatRequestMessage[],
 	toolData: Record<string, unknown>,
@@ -80,6 +110,16 @@ export function convertMessages(
 	return converted;
 }
 
+/**
+ * Maps VS Code LanguageModelChatMessageRole to OpenAI-compatible role strings.
+ * 
+ * Converts numeric role values from VS Code's LanguageModelChatMessageRole enum
+ * to string roles used by OpenAI API. Also handles special case where user messages
+ * containing tool call results should be mapped to 'tool' role.
+ * 
+ * @param message - The VS Code chat message to map
+ * @returns OpenAI-compatible role string: 'system', 'user', 'assistant', 'tool', or 'thinking'
+ */
 function mapRole(
 	message: vscode.LanguageModelChatRequestMessage,
 ): 'system' | 'user' | 'assistant' | 'tool' | 'thinking' {
@@ -104,6 +144,15 @@ function mapRole(
 	return 'system';
 }
 
+/**
+ * Type guard to check if a message part is a tool result part.
+ * 
+ * Validates that an unknown object conforms to the tool result part interface,
+ * which requires a callId string and optional content array.
+ * 
+ * @param unknown_part - The unknown object to check
+ * @returns true if the object is a valid tool result part, false otherwise
+ */
 export function isToolResultPart(
 	unknown_part: unknown,
 ): unknown_part is { callId: string; content?: ReadonlyArray<unknown> } {
@@ -117,6 +166,17 @@ export function isToolResultPart(
 	return hasCallId && hasContent;
 }
 
+/**
+ * Extracts and formats text content from tool result parts.
+ * 
+ * Processes the content array of a tool result part, handling different content types:
+ * - LanguageModelTextPart: extracts the value property
+ * - String: uses the string directly
+ * - Other types: attempts JSON stringification
+ * 
+ * @param content_part - The tool result part containing content to extract
+ * @returns Concatenated string of all content parts
+ */
 function collectToolResultText(content_part: { content?: ReadonlyArray<unknown> }): string {
 	let text = '';
 	for (const c of content_part.content ?? []) {
