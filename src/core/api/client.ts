@@ -1,0 +1,94 @@
+import OpenAI, { APIPromise } from 'openai';
+import { Stream } from 'openai/core/streaming.js';
+import * as vscode from 'vscode';
+
+const ALIBABACLOUD_MODEL_SITE = "https://modelstudio.console.alibabacloud.com/";
+const API_BASE_URL = 'https://dashscope-intl.aliyuncs.com/compatible-mode/v1';
+const CODING_API_BASE_URL = 'https://coding-intl.dashscope.aliyuncs.com/v1';
+
+const ENDPOINTS = [
+  API_BASE_URL,
+  CODING_API_BASE_URL,
+];
+
+export interface FailedAttemptUrl {url: string; last_try: Date; error: string};
+
+export class QwenClient {
+  private _workingEndpointIndex: number = 0;
+  private _failedEndpoints: Array<FailedAttemptUrl> = [];
+  private _client: OpenAI;
+  
+  constructor(
+    private readonly apiKey: string
+  ) {
+    this._client = this.initialize();
+  }
+
+  stream(
+    requestBody: {
+      model: string;
+      messages: OpenAI.Chat.Completions.ChatCompletionMessageParam[];
+      tools?: {
+        type: "function";
+        function: {
+          name: string;
+          description: string;
+          parameters: object;
+        };
+      }[];
+      stream_options?: {
+        include_usage?: boolean,
+      },
+    }
+  ):
+    APIPromise<Stream<OpenAI.Chat.Completions.ChatCompletionChunk> & {
+      _request_id?: string | null;
+    }>
+  {
+    return this._client!.chat.completions.create(
+      {
+        model: requestBody.model,
+        messages: requestBody.messages,
+        stream: true, // Stream enabled by default
+      }, {
+        body: {
+          ...requestBody,
+          stream: true,
+          enable_thinking: true,
+        },
+      }
+    );
+  }
+  
+  private initialize(): OpenAI {
+    return new OpenAI({
+      apiKey: this.apiKey,
+      baseURL: ENDPOINTS[this._workingEndpointIndex],
+    });
+  }
+
+  throwEndpointException(error_msg: string): void {
+    this._failedEndpoints.push({
+      url: ENDPOINTS[this._workingEndpointIndex],
+      error: error_msg,
+      last_try: new Date(),
+    });
+  }
+  
+  /**
+   * Endpoints rotation is handled by getNextUrl()
+   * 
+   * @returns 
+   */
+  rotate(): void {
+    if (this._failedEndpoints.length === 2) {
+      throw Error(`No API endpoints match the given API key nor selected models. See more at: ${ALIBABACLOUD_MODEL_SITE}`)
+    }
+    this._workingEndpointIndex = (this._workingEndpointIndex + 1) % ENDPOINTS.length;
+    this._client = this._client.withOptions({baseURL: ENDPOINTS[this._workingEndpointIndex]});
+  }
+  
+  getUrl(): string {
+    return ENDPOINTS[this._workingEndpointIndex];
+  }
+}
