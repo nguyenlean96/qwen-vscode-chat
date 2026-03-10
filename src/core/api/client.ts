@@ -3,6 +3,8 @@ import { Stream } from 'openai/core/streaming.js';
 import * as vscode from 'vscode';
 
 const ALIBABACLOUD_MODEL_SITE = "https://modelstudio.console.alibabacloud.com/";
+
+
 const API_BASE_URL = 'https://dashscope-intl.aliyuncs.com/compatible-mode/v1';
 const CODING_API_BASE_URL = 'https://coding-intl.dashscope.aliyuncs.com/v1';
 
@@ -19,8 +21,15 @@ export class QwenClient {
   private _client: OpenAI;
   
   constructor(
-    private readonly apiKey: string
+    private readonly apiKey: string,
+    lastUsedUrl: string | undefined = undefined
   ) {
+    if (!lastUsedUrl) {
+      const lastUsedUrlIndex = ENDPOINTS.indexOf(lastUsedUrl ?? '');
+      if (lastUsedUrlIndex !== -1) {
+        this._workingEndpointIndex = lastUsedUrlIndex;
+      }
+    }
     this._client = this.initialize();
   }
 
@@ -77,11 +86,13 @@ export class QwenClient {
   
   /**
    * Endpoints rotation is handled by getNextUrl()
-   * 
-   * @returns 
    */
   rotate(): void {
-    if (this._failedEndpoints.length === 2) {
+    /**
+     * This check whether the number of errors is equal to the number of API available
+     * which means all API endpoints threw error for the given API Key + selected model.
+     */
+    if (this._failedEndpoints.length === ENDPOINTS.length) {
       throw Error(`No API endpoints match the given API key nor selected models. See more at: ${ALIBABACLOUD_MODEL_SITE}`)
     }
     this._workingEndpointIndex = (this._workingEndpointIndex + 1) % ENDPOINTS.length;
