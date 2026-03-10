@@ -1,6 +1,5 @@
 import OpenAI, { APIPromise } from 'openai';
 import { Stream } from 'openai/core/streaming.js';
-import * as vscode from 'vscode';
 
 const ALIBABACLOUD_MODEL_SITE = "https://modelstudio.console.alibabacloud.com/";
 
