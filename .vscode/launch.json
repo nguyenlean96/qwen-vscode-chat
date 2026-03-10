@@ -6,6 +6,17 @@
 	"version": "0.2.0",
 	"configurations": [
 		{
+			"name": "Run Extension with VSC Insiders",
+			"type": "node",
+			"request": "launch",
+			"runtimeExecutable": "/Applications/Visual Studio Code - Insiders.app/Contents/Resources/app/bin/code",
+			"args": ["--extensionDevelopmentPath=${workspaceFolder}"],
+			"outFiles": [
+				"${workspaceFolder}/dist/**/*.js"
+			],
+			"preLaunchTask": "${defaultBuildTask}",
+		},
+		{
 			"name": "Run Extension",
 			"type": "extensionHost",
 			"request": "launch",
